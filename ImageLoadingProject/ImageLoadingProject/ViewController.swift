@@ -32,7 +32,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        1
+        2
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -40,15 +40,29 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             fatalError("Could not dequeue cell")
         }
 
-        cell.title = "Guinea pig"
-        cell.imageUrl = URL(string: "https://news.clas.ufl.edu/files/2020/06/AdobeStock_345118478-copy-1440x961-1.jpg")
+        switch rows[indexPath.row] {
+        case .largeImage(let title, let previewUrlString, _):
+            cell.title = title
+            cell.imageUrl = URL(string: previewUrlString)
+        case .image(let title, let urlString):
+            cell.title = title
+            cell.imageUrl = URL(string: urlString)
+        }
+        
         return cell
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        let detailsViewController = URLDetailsViewController()
-        detailsViewController.pageUrl = URL(string: "https://news.clas.ufl.edu/uncovering-the-origin-of-the-domesticated-guinea-pig/")
+        guard let detailsViewController = self.storyboard!.instantiateViewController(identifier: "details") as? URLDetailsViewController else { fatalError() }
+        
+        switch rows[indexPath.row] {
+        case .largeImage(let _, _, let urlString):
+            detailsViewController.pageUrl = URL(string: urlString)
+        case .image(title: let _, urlString: let urlString):
+            detailsViewController.pageUrl = URL(string: urlString)
+        }
+        
         navigationController?.pushViewController(detailsViewController, animated: true)
     }
 }
